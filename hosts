@@ -1,0 +1,4 @@
+[openstack_instances]
+test1 flavor=1 group=test_servers
+test2 flavor=2 group=test_servers
+app1 flavor=4 group=application_servers
