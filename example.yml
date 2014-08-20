@@ -1,0 +1,29 @@
+---
+
+#
+# This is an example playbook entry that would create an openstack virtual
+# machine and then add it to the in-memory inventory, and finally add the ip
+# to the instance as the ansible_ssh_host.
+#
+
+- name: ensure instance exists in openstack
+  nova_compute:
+    state: present
+    login_username: "{{ os_username }}"
+    login_password: "{{ os_password }}"
+    login_tenant_name: "{{ os_tenant_name }}"
+    auth_url: "{{ os_auth_url }}"
+    region_name: "{{ os_region_name }}"
+    name: "{{ inventory_hostname }}"
+    image_id: "{{ os_image_id }}"
+    key_name: "{{ os_key_name }}"
+    flavor_id: "{{ flavor_id }}"
+    security_groups: default
+  register: nova
+
+- name: add the instance to the in-memory inventory
+  add_host: name={{ inventory_hostname }}
+
+# You may need to change "private" depending on your host; some clouds name it
+# differently.
+- set_fact: ansible_ssh_host={{ nova.info.addresses.private[0].addr }}

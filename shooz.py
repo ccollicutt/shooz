@@ -38,8 +38,9 @@ def main(args):
   inventory['_meta'] = {}
   inventory['_meta']['hostvars'] = {}
 
-  # open the hosts file
-  f = open_file('hosts')
+  # Open the hosts file; assumes hosts file is in local directory the command
+  # is being run from.
+  f = open_file('./hosts')
 
   if f:
     for line in f.readlines():
