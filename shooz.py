@@ -70,7 +70,8 @@ def open_file(file_name):
   try:
     f = open(file_name)
   except (OSError, IOError) as e:
-    return False
+    print 'ERROR: Could not open ansible hosts file, exiting...'
+    sys.exit(1)
 
   return f
 
@@ -91,51 +92,46 @@ def main(args):
   # Get all the servers
   nova_servers = nc.servers.findall()
 
-  # FIXME: more pythonic error checking
-  if f:
-    for line in f.readlines():
-      if line == "[openstack_instances]\n":
-        group = line.replace("[", "")
-        group = group.replace("]", "")
-        group = group.replace("\n", "")
-      # FIXME: test cases
-      elif line.startswith("#"):
-        break
-      elif line.startswith("[") or line == "\n":
-        break
-      else:
+  for line in f.readlines():
+    if line == "[openstack_instances]\n":
+      group = line.replace("[", "")
+      group = group.replace("]", "")
+      group = group.replace("\n", "")
+    # FIXME: test cases
+    elif line.startswith("#"):
+      break
+    elif line.startswith("[") or line == "\n":
+      break
+    else:
 
-        # Get the server name
-        server = line.split()
+      # Get the server name
+      server = line.split()
 
-        name = server[0]
-        # FIXME
-        # flavor_id=1
-        flavor = server[1].split("=")[1]
-        # group=somegroup
-        group = server[2].split("=")[1]
+      name = server[0]
+      # FIXME
+      # flavor_id=1
+      flavor = server[1].split("=")[1]
+      # group=somegroup
+      group = server[2].split("=")[1]
 
-        # FIXME: Should be in some kind of array
-        add_host(vm_name=name, group=group, inventory=inventory )
-        add_host(vm_name=name, group='openstack_instances', inventory=inventory)
+      # FIXME: Should be in some kind of array
+      add_host(vm_name=name, group=group, inventory=inventory )
+      add_host(vm_name=name, group='openstack_instances', inventory=inventory)
 
-        # Loop through the nova servers looking for name
-        nova_server = None
-        for s in nova_servers:
-          if s.name == name:
-            nova_server = s
+      # Loop through the nova servers looking for name
+      nova_server = None
+      for s in nova_servers:
+        if s.name == name:
+          nova_server = s
 
-        if nova_server:
-          ip = nova_server.addresses['cybera'][0]['addr']
-          add_host(vm_name=name, group='undefined', inventory=inventory, \
+      if nova_server:
+        ip = nova_server.addresses['cybera'][0]['addr']
+        add_host(vm_name=name, group='undefined', inventory=inventory, \
             flavor=flavor, ip=ip)
-        else:
-          # add flavor last
-          add_host(vm_name=name, group='undefined', inventory=inventory, \
+      else:
+        # add flavor last
+        add_host(vm_name=name, group='undefined', inventory=inventory, \
           flavor=flavor)
-  else:
-    print "ERROR: Could not find hosts file"
-    sys.exit(1)
 
   print json.dumps(inventory, sort_keys=True, indent=4)
 
