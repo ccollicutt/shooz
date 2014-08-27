@@ -5,9 +5,11 @@
 
 ## About
 
-This inventory script does not query OpenStack nova directly. Instead it generates an inventory based on the hosts file which is setup very similarily to how Ansible does it's hosts file. Then that inventory is fed to Ansible, and the initial playbook used will use nova_compute, add_hosts, and set_fact to instantiate the virtual machiens and update the in-memory Ansible inventory so that Ansible can actually ssh into the instances.
+This Ansible inventory script uses the OpenStack credentials in ```group_vars/openstack_instances``` to connect to an OpenStack compute service and get a list of servers. Then it opens the ```./hosts``` file and uses the servers listed there to query OpenStack compute and obtain the ip address of each server, if they exist, by their name (as opposed to their uuid).
 
-I suppose it's more of a workflow than a full blown inventory-nova script.
+## group_vars/openstack_instances
+
+This inventory script expects that there will be an Ansible variable file called ```openstack_instances```.
 
 ## Hosts file format
 
@@ -18,6 +20,10 @@ Currently must look like this:
 servername flavor_id=int group=string
 ```
 
+## group_vars/openstack_instances
+
+This script requires that your OpenStack credentials are in ```group_vars/openstack_instances```.
+
 ## Minimum playbook
 
 The [example playbook](example.yml) shows the minium needed to use this workflow.
@@ -26,7 +32,7 @@ In order to use `nova_compute` you will have to setup the proper variables as we
 
 ## Gotchas
 
-* I don't think using a single host (ie. --host) would work with this workflow, so the inventory script doesn't support it
+* Single host not supported yet
 
 ## Acknowledgements
 
